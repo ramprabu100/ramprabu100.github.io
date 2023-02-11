@@ -1,11 +1,11 @@
 import logo from './logo.svg';
 import React from "react";
 import "./App.css";
-import Introduction from "./components/Introduction";
-import Skills from "./components/Skills";
-import Experience from "./components/Experience";
-import Education from "./components/Education";
-import AboutMe from "./components/AboutMe";
+import Introduction from "./components/Introduction/Introduction";
+import Skills from "./components/Skills/Skills";
+import Experience from "./components/Experience/Experience";
+import Education from "./components/Education/Education";
+import AboutMe from "./components/AboutMe/AboutMe";
 
 class App extends React.Component {
   state = {
