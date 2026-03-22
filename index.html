@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramachandraprabhu T</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --c:#00d2ff;--c2:#00f5ff;--bg:#050505;
+  --text:rgba(255,255,255,.88);--muted:rgba(255,255,255,.42);
+  --bdr:rgba(0,210,255,.14);
+}
+html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;font-family:'Inter',sans-serif;color:var(--text)}
+canvas{position:absolute;top:0;left:0;display:block;z-index:0}
+
+/* ── CURSOR (desktop only) ── */
+#cur,#cur-r{display:none;position:fixed;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+@media(hover:hover) and (pointer:fine){
+  html,body{cursor:none}
+  #cur{display:block;width:7px;height:7px;border-radius:50%;background:var(--c);mix-blend-mode:screen}
+  #cur-r{display:block;width:30px;height:30px;border-radius:50%;border:1px solid rgba(0,210,255,.4);z-index:9998;mix-blend-mode:screen}
+}
+
+/* ── PAGES ── */
+.page{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;z-index:10;
+  padding:40px 60px;transition:opacity .25s;
+}
+.page.active{opacity:1;pointer-events:all}
+
+/* ── HOME ── */
+.home-inner{text-align:center;max-width:640px;width:100%}
+.tag{
+  font-family:'JetBrains Mono',monospace;font-size:.63rem;
+  color:var(--c);letter-spacing:5px;text-transform:uppercase;
+  margin-bottom:16px;opacity:.7;
+}
+h1.name{
+  font-family:'Orbitron',sans-serif;
+  font-size:clamp(1.15rem,4.5vw,2.6rem);
+  font-weight:900;letter-spacing:1px;line-height:1.15;
+  background:linear-gradient(120deg,#fff 0%,#b0eeff 50%,var(--c) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;margin-bottom:10px;
+}
+.role-line{
+  font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  color:rgba(0,210,255,.65);letter-spacing:2px;margin-bottom:24px;
+  display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;
+}
+.dot{color:rgba(0,210,255,.25)}
+.summary{
+  font-size:.88rem;line-height:1.85;color:var(--muted);font-weight:300;
+  max-width:560px;margin:0 auto 34px;
+  border-left:1px solid rgba(0,210,255,.25);padding-left:18px;text-align:left;
+}
+.summary strong{color:rgba(255,255,255,.78);font-weight:500}
+.nav-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.nav-btn{
+  font-family:'JetBrains Mono',monospace;font-size:.66rem;letter-spacing:2px;
+  text-transform:uppercase;padding:12px 22px;
+  border:1px solid var(--bdr);border-radius:2px;
+  background:rgba(0,210,255,.03);color:var(--c);
+  cursor:pointer;position:relative;overflow:hidden;user-select:none;
+  transition:border-color .3s,background .3s,color .3s;
+}
+.nav-btn::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:var(--c);transform:scaleX(0);transform-origin:left;transition:transform .3s;
+}
+.nav-btn:hover{border-color:rgba(0,210,255,.4);background:rgba(0,210,255,.07);color:#fff}
+.nav-btn:hover::after{transform:scaleX(1)}
+
+/* ── SECTION PAGES ── */
+.sec-page{justify-content:flex-start;padding-top:48px;overflow-y:auto}
+.sec-inner{width:100%;max-width:960px}
+.back-btn{
+  font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:3px;
+  color:rgba(0,210,255,.45);background:none;border:none;
+  cursor:pointer;margin-bottom:28px;
+  display:inline-flex;align-items:center;gap:8px;
+  text-transform:uppercase;transition:color .25s;
+}
+.back-btn::before{content:'←';font-size:.85rem}
+.back-btn:hover{color:var(--c)}
+.sec-title{
+  font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;
+  letter-spacing:5px;text-transform:uppercase;
+  color:rgba(0,210,255,.5);margin-bottom:26px;
+}
+
+/* ── TIMELINE ── */
+.timeline{display:flex;flex-direction:column}
+.t-item{
+  display:grid;grid-template-columns:155px 1px 1fr;
+  gap:0 22px;padding-bottom:26px;
+}
+.t-item:last-child{padding-bottom:0}
+.t-date{
+  font-family:'JetBrains Mono',monospace;font-size:.59rem;
+  color:rgba(0,210,255,.45);letter-spacing:1px;
+  text-align:right;padding-top:3px;line-height:1.6;
+}
+.t-line{display:flex;flex-direction:column;align-items:center}
+.t-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--c);
+  flex-shrink:0;box-shadow:0 0 8px var(--c);margin-top:6px;
+}
+.t-vline{
+  flex:1;width:1px;margin-top:4px;
+  background:linear-gradient(to bottom,rgba(0,210,255,.3),rgba(0,210,255,.04));
+}
+.t-item:last-child .t-vline{display:none}
+.t-role{font-size:.9rem;font-weight:500;color:#fff;margin-bottom:2px}
+.t-co{font-family:'JetBrains Mono',monospace;font-size:.63rem;color:var(--c);letter-spacing:1px;margin-bottom:6px}
+.t-desc{font-size:.8rem;line-height:1.65;color:var(--muted);list-style:none;margin-bottom:4px}
+.t-desc li{padding-left:12px;position:relative;margin-bottom:2px}
+.t-desc li::before{content:'▸';position:absolute;left:0;color:var(--c);font-size:.65rem;top:2px}
+.t-mdate{display:none;font-family:'JetBrains Mono',monospace;font-size:.55rem;color:rgba(0,210,255,.4);margin-bottom:4px}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.54rem;
+  border:1px solid rgba(0,210,255,.28);color:rgba(0,210,255,.75);
+  padding:2px 7px;border-radius:20px;margin:4px 3px 0 0;
+}
+
+/* ── EDUCATION ── */
+.edu-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px 30px;margin-bottom:28px}
+.edu-yr{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:rgba(0,210,255,.4);letter-spacing:2px;margin-bottom:5px}
+.edu-deg{font-size:.88rem;font-weight:500;color:#fff;margin-bottom:4px;line-height:1.35}
+.edu-sch{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:rgba(0,210,255,.6)}
+.cert-label{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:rgba(0,210,255,.38);letter-spacing:3px;margin-bottom:10px;text-transform:uppercase}
+.cert-row{display:flex;flex-wrap:wrap;gap:7px}
+
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 48px;margin-bottom:28px}
+.c-lbl{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:rgba(0,210,255,.38);letter-spacing:3px;margin-bottom:4px}
+.c-val{font-size:.88rem;color:var(--text)}
+
+/* ── HINT ── */
+#hint{
+  position:absolute;bottom:18px;left:50%;transform:translateX(-50%);
+  font-family:'JetBrains Mono',monospace;font-size:.55rem;
+  color:rgba(0,210,255,.25);letter-spacing:3px;pointer-events:none;
+  z-index:15;white-space:nowrap;animation:blink 3s infinite;
+}
+@keyframes blink{0%,100%{opacity:.25}55%{opacity:.8}}
+
+/* ── REVEAL ANIMATIONS ── */
+.ri{opacity:0;transform:translateY(12px);transition:opacity .4s,transform:translateY .4s}
+.page.active .ri{opacity:1;transform:translateY(0)}
+.ri:nth-child(1){transition-delay:.05s}
+.ri:nth-child(2){transition-delay:.1s}
+.ri:nth-child(3){transition-delay:.15s}
+.ri:nth-child(4){transition-delay:.2s}
+.ri:nth-child(5){transition-delay:.25s}
+.ri:nth-child(6){transition-delay:.3s}
+.ri:nth-child(7){transition-delay:.35s}
+.ri:nth-child(8){transition-delay:.4s}
+.ri:nth-child(9){transition-delay:.45s}
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  .page{padding:22px 18px}
+  .sec-page{padding-top:26px}
+  .tag{font-size:.55rem;letter-spacing:3px}
+  .role-line{font-size:.58rem;letter-spacing:1px;gap:5px;margin-bottom:18px}
+  .summary{font-size:.82rem;line-height:1.7;margin-bottom:22px;padding-left:12px}
+  .nav-btn{padding:13px 18px;font-size:.64rem}
+  .sec-title{font-size:.65rem;letter-spacing:3px}
+  /* timeline: hide date col, show inline date */
+  .t-item{grid-template-columns:1px 1fr;gap:0 14px}
+  .t-date{display:none}
+  .t-mdate{display:block}
+  .edu-grid{grid-template-columns:1fr;gap:16px}
+  .contact-grid{grid-template-columns:1fr;gap:14px}
+  #hint{display:none}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-r"></div>
+<canvas id="bgc"></canvas>
+
+<!-- ══ HOME ══ -->
+<div class="page active" id="pg-home">
+  <div class="home-inner">
+    <div class="tag">// portfolio · gen &amp; agentic ai</div>
+    <h1 class="name">Ramachandraprabu T</h1>
+    <div class="role-line">
+      <span>Staff Software Engineer</span><span class="dot">·</span>
+      <span style="color:var(--c2)">Demandbase</span><span class="dot">·</span>
+      <span>Bengaluru</span><span class="dot">·</span>
+      <span style="color:var(--c2)">8+ yrs</span>
+    </div>
+    <p class="summary">
+      Engineer who <strong>builds things that didn't exist before</strong> — from enterprise B2B
+      platforms to production-grade Agentic AI systems. 8+ years navigating the full stack,
+      leading teams, shipping at scale. Currently leading
+      <strong>Gen AI &amp; multi-agent development</strong> at Demandbase, obsessed with elegant
+      code, debugging craft, and pattern-based thinking.
+    </p>
+    <div class="nav-btns">
+      <div class="nav-btn" data-target="work">Work Experience</div>
+      <div class="nav-btn" data-target="edu">Education</div>
+      <div class="nav-btn" data-target="contact">Contact</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ WORK ══ -->
+<div class="page sec-page" id="pg-work">
+  <div class="sec-inner">
+    <div class="back-btn js-back ri">Back</div>
+    <div class="sec-title ri">Work Experience</div>
+    <div class="timeline">
+
+      <div class="t-item ri">
+        <div class="t-date">Jan 2026 — Present</div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Jan 2026 — Present</div>
+          <div class="t-role">Staff Software Engineer</div>
+          <div class="t-co">Demandbase</div>
+          <ul class="t-desc">
+            <li>Directing Agentic AI strategy and GenAI platform roadmap</li>
+            <li>Driving cross-team LLM integration across the product suite</li>
+          </ul>
+          <div class="badge">LangChain</div><div class="badge">LLM</div><div class="badge">Agentic AI</div><div class="badge">Python</div><div class="badge">TypeScript</div>
+        </div>
+      </div>
+
+      <div class="t-item ri">
+        <div class="t-date">Jul 2024 — Jan 2026<br><span style="opacity:.45">1 yr 7 mos</span></div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Jul 2024 — Jan 2026</div>
+          <div class="t-role">Senior Software Engineer — Gen AI</div>
+          <div class="t-co">Demandbase</div>
+          <ul class="t-desc">
+            <li>Led team of 9 engineers building Gen AI applications</li>
+            <li>Architected multi-agent systems &amp; RAG pipelines for B2B marketing intelligence</li>
+            <li>Drove LLM feature adoption across the platform</li>
+          </ul>
+          <div class="badge">Multi-agent</div><div class="badge">RAG</div><div class="badge">LLM</div><div class="badge">LangChain</div><div class="badge">Python</div><div class="badge">FastAPI</div><div class="badge">PostgreSQL</div>
+        </div>
+      </div>
+
+      <div class="t-item ri">
+        <div class="t-date">Nov 2021 — Jul 2024<br><span style="opacity:.45">2 yrs 9 mos</span></div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Nov 2021 — Jul 2024</div>
+          <div class="t-role">Software Engineer II</div>
+          <div class="t-co">Demandbase · Hyderabad</div>
+          <ul class="t-desc">
+            <li>Led team of 5 building B2B ABM solutions at scale</li>
+            <li>Scalable backend services &amp; data pipelines for account-based marketing</li>
+          </ul>
+          <div class="badge">React</div><div class="badge">Node.js</div><div class="badge">PostgreSQL</div><div class="badge">Redis</div><div class="badge">GraphQL</div><div class="badge">Docker</div><div class="badge">AWS</div>
+        </div>
+      </div>
+
+      <div class="t-item ri">
+        <div class="t-date">Mar — Oct 2021<br><span style="opacity:.45">8 mos</span></div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Mar — Oct 2021</div>
+          <div class="t-role">Senior Software Engineer</div>
+          <div class="t-co">WhiteHat Jr · Bangalore</div>
+          <div class="badge">React</div><div class="badge">Node.js</div><div class="badge">MongoDB</div><div class="badge">REST API</div>
+        </div>
+      </div>
+
+      <div class="t-item ri">
+        <div class="t-date">Nov 2019 — Feb 2021<br><span style="opacity:.45">1 yr 4 mos</span></div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Nov 2019 — Feb 2021</div>
+          <div class="t-role">Software Engineer</div>
+          <div class="t-co">Attivo Networks · Bangalore</div>
+          <div class="badge">Python</div><div class="badge">REST API</div><div class="badge">Linux</div><div class="badge">Cybersecurity</div>
+        </div>
+      </div>
+
+      <div class="t-item ri">
+        <div class="t-date">Oct 2018 — Nov 2019<br><span style="opacity:.45">1 yr 2 mos</span></div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Oct 2018 — Nov 2019</div>
+          <div class="t-role">Software Engineer</div>
+          <div class="t-co">Neustar, Inc. · Bengaluru</div>
+          <div class="badge">Java</div><div class="badge">Spring Boot</div><div class="badge">PostgreSQL</div><div class="badge">REST API</div>
+        </div>
+      </div>
+
+      <div class="t-item ri">
+        <div class="t-date">Feb 2016 — Oct 2018<br><span style="opacity:.45">2 yrs 9 mos</span></div>
+        <div class="t-line"><div class="t-dot"></div><div class="t-vline"></div></div>
+        <div>
+          <div class="t-mdate">Feb 2016 — Oct 2018</div>
+          <div class="t-role">Software Engineer &amp; Intern</div>
+          <div class="t-co">Wipro · Bangalore / Noida</div>
+          <ul class="t-desc">
+            <li>Advanced SQL, PL/SQL, SSRS &amp; DataStage</li>
+            <li>Promoted intern → full-time engineer</li>
+          </ul>
+          <div class="badge">SQL</div><div class="badge">PL/SQL</div><div class="badge">SSRS</div><div class="badge">DataStage</div><div class="badge">Java</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDUCATION ══ -->
+<div class="page sec-page" id="pg-edu">
+  <div class="sec-inner">
+    <div class="back-btn js-back ri">Back</div>
+    <div class="sec-title ri">Education</div>
+    <div class="edu-grid">
+      <div class="ri">
+        <div class="edu-yr">2012 — 2016</div>
+        <div class="edu-deg">B.E. Computer Science &amp; Engineering</div>
+        <div class="edu-sch">K. Ramakrishna College of Technology</div>
+      </div>
+      <div class="ri">
+        <div class="edu-yr">Jan 2022</div>
+        <div class="edu-deg">Software Engineering / DSML</div>
+        <div class="edu-sch">Scaler</div>
+      </div>
+      <div class="ri">
+        <div class="edu-yr">2006 — 2012</div>
+        <div class="edu-deg">Mathematics &amp; Computer Science</div>
+        <div class="edu-sch">Bishop Heber Higher Secondary School</div>
+      </div>
+    </div>
+    <div class="cert-label ri">Certifications</div>
+    <div class="cert-row ri">
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">AMCAT Certified Software Engineer — Product</span>
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">Business English Certificate</span>
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">AMCAT Software Development Trainee</span>
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">Android Development</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONTACT ══ -->
+<div class="page sec-page" id="pg-contact">
+  <div class="sec-inner">
+    <div class="back-btn js-back ri">Back</div>
+    <div class="sec-title ri">Contact</div>
+    <div class="contact-grid">
+      <div class="ri"><div class="c-lbl">Email</div><div class="c-val">ramprabu100@gmail.com</div></div>
+      <div class="ri"><div class="c-lbl">Phone</div><div class="c-val">+91 8870181719</div></div>
+      <div class="ri"><div class="c-lbl">LinkedIn</div><div class="c-val">linkedin.com/in/ramachandraprabhut</div></div>
+      <div class="ri"><div class="c-lbl">Location</div><div class="c-val">Bengaluru, Karnataka, India</div></div>
+    </div>
+    <div class="cert-label ri">Top Skills</div>
+    <div class="cert-row ri">
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">Large Language Models</span>
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">Multi-agent Systems</span>
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">Retrieval-Augmented Generation</span>
+    </div>
+    <div class="cert-label ri" style="margin-top:18px">Languages</div>
+    <div class="cert-row ri">
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">Tamil — Native</span>
+      <span class="badge" style="font-size:.62rem;padding:3px 10px">English</span>
+    </div>
+  </div>
+</div>
+
+<div id="hint">// hover background · reveal tech stack</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ══ CURSOR ══ */
+var cur  = document.getElementById('cur');
+var curR = document.getElementById('curR');  // note: no dash — get by id below
+curR = document.getElementById('cur-r');
+var MX = innerWidth/2, MY = innerHeight/2, RX = MX, RY = MY;
+var isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+
+if (!isTouch) {
+  window.addEventListener('mousemove', function(e){ MX = e.clientX; MY = e.clientY; });
+  (function tick(){
+    cur.style.left  = MX + 'px'; cur.style.top  = MY + 'px';
+    RX += (MX-RX)*.12;           RY += (MY-RY)*.12;
+    curR.style.left = RX + 'px'; curR.style.top = RY + 'px';
+    requestAnimationFrame(tick);
+  })();
+} else {
+  window.addEventListener('touchmove', function(e){
+    MX = e.touches[0].clientX; MY = e.touches[0].clientY;
+  }, {passive:true});
+  window.addEventListener('touchend', function(){ MX = -9999; MY = -9999; });
+}
+
+/* ══ PARTICLES ══ */
+var cv  = document.getElementById('bgc');
+var ctx = cv.getContext('2d', {alpha:false});
+var W=0, H=0, N=0;
+var P;        // Float32Array, stride=7: x y vx vy hx hy glow
+var ST = 7;
+
+var TECH = [
+  'React','Node.js','Python','TypeScript','LangChain',
+  'LLM','RAG','Multi-agent','PostgreSQL','MongoDB',
+  'Docker','AWS','Redis','GraphQL','REST API',
+  'FastAPI','Next.js','Kubernetes','Git','Agentic AI'
+];
+var words = [];   // {word, x, y, a, ta}
+
+var DEN=28, MRAD=140, REF=.05, FRI=.92;
+var BRAD=85, BF=22, CRAD=65, CDEC=.58, CMIN=4, CHOPS=3, CMS=55;
+var CQ = [];   // chain queue
+
+function calcN(w,h){ return Math.round(w*h/10000*DEN); }
+
+function setup(){
+  W = innerWidth; H = innerHeight;
+  cv.width = W; cv.height = H;
+  N = calcN(W,H);
+  P = new Float32Array(N*ST);
+  for(var i=0,b=0; i<N; i++,b+=ST){
+    var x=Math.random()*W, y=Math.random()*H;
+    P[b]=x; P[b+1]=y;
+  }
+  /* tech word grid */
+  words = [];
+  var cols=5, rows=4, pw=W/cols, ph=H/rows;
+  for(var r=0; r<rows; r++){
+    for(var c=0; c<cols; c++){
+      var idx = r*cols+c;
+      if(idx >= TECH.length) break;
+      words.push({
+        word: TECH[idx],
+        x: (c+.5)*pw + (Math.random()-.5)*70,
+        y: (r+.5)*ph + (Math.random()-.5)*55,
+        a: 0, ta: 0
+      });
+    }
+  }
+  /* rebuild swirl arrays to match new N */
+  SA0=[]; SD0=[]; SARM=[]; SBVX=[]; SBVY=[]; SNHX=[]; SNHY=[];
+  for(var i=0; i<N; i++){
+    var b=i*ST, dx=P[b]-W/2, dy=P[b+1]-H/2;
+    SA0.push(Math.atan2(dy,dx));
+    SD0.push(Math.sqrt(dx*dx+dy*dy)||1);
+    SARM.push(0); SBVX.push(0); SBVY.push(0);
+    SNHX.push(Math.random()*W); SNHY.push(Math.random()*H);
+  }
+}
+
+/* blast: push particles near (cx,cy), return centroid or null */
+function blast(cx,cy,r,f){
+  var rSq=r*r, sx=0, sy=0, k=0;
+  for(var i=0,b=0; i<N; i++,b+=ST){
+    var dx=P[b]-cx, dy=P[b+1]-cy, d2=dx*dx+dy*dy;
+    if(d2>=rSq) continue;
+    var d=Math.sqrt(d2)||1, mag=f*(1-d2/rSq);
+    P[b+2]+=(dx/d)*mag; P[b+3]+=(dy/d)*mag; P[b+6]=1;
+    sx+=P[b]; sy+=P[b+1]; k++;
+  }
+  return k ? {x:sx/k, y:sy/k} : null;
+}
+
+/* ══ SWIRL ══ */
+var SA0=[], SD0=[], SARM=[], SBVX=[], SBVY=[], SNHX=[], SNHY=[];
+var sOn=false, sPhase='idle', sT0=0, sCX=0, sCY=0, sCB=null;
+var G_MS=520, H_MS=60, B_MS=320;
+
+function swirlBegin(cb){
+  sCX = W/2; sCY = H/2; sCB = cb;
+  for(var i=0,b=0; i<N; i++,b+=ST){
+    var dx=P[b]-sCX, dy=P[b+1]-sCY;
+    SA0[i] = Math.atan2(dy,dx);
+    SD0[i] = Math.sqrt(dx*dx+dy*dy)||1;
+    SARM[i] = (Math.random()-.5)*Math.PI*6;
+    SBVX[i] = 0; SBVY[i] = 0;
+    SNHX[i] = Math.random()*W; SNHY[i] = Math.random()*H;
+  }
+  sPhase='gather'; sT0=performance.now(); sOn=true;
+}
+
+function ss(t){ return t*t*(3-2*t); } /* smoothstep */
+
+function tickSwirl(now){
+  var el=now-sT0, cx=sCX, cy=sCY;
+
+  if(sPhase==='gather'){
+    var t=Math.min(1,el/G_MS), te=ss(t);
+    for(var i=0,b=0; i<N; i++,b+=ST){
+      var ang = SA0[i] + SARM[i]*te + te*Math.PI*4;
+      var dist= SD0[i]*Math.pow(1-te,1.6);
+      var tx=cx+Math.cos(ang)*dist, ty=cy+Math.sin(ang)*dist;
+      P[b+2] = (P[b+2]+(tx-P[b])*.2)*.8;
+      P[b+3] = (P[b+3]+(ty-P[b+1])*.2)*.8;
+      P[b]  += P[b+2]; P[b+1]+= P[b+3];
+      P[b+6] = .5+.5*te;
+    }
+    if(t>=1) sPhase='hold';
+  }
+  else if(sPhase==='hold'){
+    var ht=Math.min(1,(el-G_MS)/H_MS);
+    for(var i=0,b=0; i<N; i++,b+=ST){
+      P[b+2]=(P[b+2]+(cx-P[b])*.35)*.65;
+      P[b+3]=(P[b+3]+(cy-P[b+1])*.35)*.65;
+      P[b]+=P[b+2]; P[b+1]+=P[b+3]; P[b+6]=1;
+    }
+    if(ht>=1){
+      sPhase='burst';
+      for(var i=0,b=0; i<N; i++,b+=ST){
+        var ang=Math.atan2(P[b+1]-cy, P[b]-cx)+(Math.random()-.5)*.8;
+        var spd=6+Math.random()*12;
+        SBVX[i]=Math.cos(ang)*spd; SBVY[i]=Math.sin(ang)*spd;
+      }
+    }
+  }
+  else if(sPhase==='burst'){
+    var bt=Math.min(1,(el-G_MS-H_MS)/B_MS);
+    var bte=1-(1-bt)*(1-bt);
+    for(var i=0,b=0; i<N; i++,b+=ST){
+      SBVX[i]*=.92; SBVY[i]*=.92;
+      P[b]+=SBVX[i]; P[b+1]+=SBVY[i];
+      P[b+6]=Math.max(0,1-bte);
+    }
+    if(bt>=1){
+      for(var i=0,b=0; i<N; i++,b+=ST){
+        P[b+4]=SNHX[i]; P[b+5]=SNHY[i];
+        P[b+2]=SBVX[i]; P[b+3]=SBVY[i];
+      }
+      sOn=false; sPhase='idle';
+      if(sCB){ sCB(); sCB=null; }
+    }
+  }
+}
+
+/* ══ MAIN LOOP ══ */
+var lastClick = -1e9;
+
+function tick(now){
+  requestAnimationFrame(tick);
+
+  /* chain blast hops */
+  if(CQ.length && !sOn){
+    var nxt=[];
+    for(var k=0; k<CQ.length; k++){
+      var ev=CQ[k];
+      if(ev.at>now){ nxt.push(ev); continue; }
+      var c=blast(ev.x,ev.y,CRAD,ev.f);
+      var nf=ev.f*CDEC;
+      if(c && nf>=CMIN && ev.hop<CHOPS)
+        nxt.push({x:c.x,y:c.y,f:nf,at:now+CMS,hop:ev.hop+1});
+    }
+    CQ=nxt;
+  }
+
+  if(sOn){
+    tickSwirl(now);
+  } else {
+    /* normal physics */
+    var mRSq=MRAD*MRAD;
+    for(var i=0,b=0; i<N; i++,b+=ST){
+      var x=P[b],y=P[b+1],vx=P[b+2],vy=P[b+3],hx=P[b+4],hy=P[b+5];
+      var dmx=x-MX, dmy=y-MY, dm2=dmx*dmx+dmy*dmy;
+      if(dm2<mRSq){
+        var d=Math.sqrt(dm2)||1, f=1-dm2/mRSq;
+        vx+=(dmx/d)*f*5; vy+=(dmy/d)*f*5;
+      }
+      vx=(vx+(hx-x)*REF)*FRI; vy=(vy+(hy-y)*REF)*FRI;
+      x+=vx; y+=vy;
+      if(x<0){x=0;vx*=-1}else if(x>W){x=W;vx*=-1}
+      if(y<0){y=0;vy*=-1}else if(y>H){y=H;vy*=-1}
+      if(P[b+6]>0) P[b+6]=Math.max(0,P[b+6]-.016);
+      P[b]=x;P[b+1]=y;P[b+2]=vx;P[b+3]=vy;
+    }
+  }
+
+  /* tech word reveal */
+  var revR2=125*125;
+  for(var k=0; k<words.length; k++){ 
+    var w=words[k];
+    var dx=w.x-MX, dy=w.y-MY;
+    w.ta = (!sOn && dx*dx+dy*dy<revR2) ? .82 : 0;
+    w.a += (w.ta-w.a)*.07;
+  }
+
+  /* ── RENDER ── */
+  ctx.fillStyle='#050505'; ctx.fillRect(0,0,W,H);
+
+  /* vortex glow during swirl */
+  if(sOn){
+    var el2=now-sT0, gt=0;
+    if(sPhase==='gather')      gt=Math.min(1,el2/G_MS);
+    else if(sPhase==='hold')   gt=1;
+    else if(sPhase==='burst')  gt=1-Math.min(1,(el2-G_MS-H_MS)/B_MS);
+    if(gt>.01){
+      var gr=ctx.createRadialGradient(sCX,sCY,0,sCX,sCY,200*gt+30);
+      gr.addColorStop(0,'rgba(0,210,255,'+(0.2*gt)+')');
+      gr.addColorStop(.5,'rgba(0,160,210,'+(0.07*gt)+')');
+      gr.addColorStop(1,'transparent');
+      ctx.fillStyle=gr; ctx.fillRect(0,0,W,H);
+    }
+  }
+
+  /* normal particles */
+  ctx.beginPath(); ctx.fillStyle='#00d2ff';
+  for(var i=0,b=0; i<N; i++,b+=ST){
+    if(P[b+6]<.01) ctx.rect(P[b],P[b+1],1.5,1.5);
+  }
+  ctx.fill();
+
+  /* glowing particles */
+  ctx.shadowBlur=10; ctx.shadowColor='#88eeff'; ctx.fillStyle='#ccf6ff';
+  ctx.beginPath();
+  for(var i=0,b=0; i<N; i++,b+=ST){
+    if(P[b+6]>=.01) ctx.rect(P[b]-1,P[b+1]-1,3,3);
+  }
+  ctx.fill(); ctx.shadowBlur=0;
+
+  /* tech words */
+  ctx.font='700 11px "JetBrains Mono",monospace'; ctx.textAlign='center';
+  for(var k=0; k<words.length; k++){ 
+    var w=words[k];
+    if(w.a<.01) continue;
+    ctx.save(); ctx.globalAlpha=w.a;
+    ctx.shadowBlur=16; ctx.shadowColor='#00d2ff';
+    ctx.fillStyle='#00f5ff'; ctx.fillText(w.word,w.x,w.y);
+    ctx.restore();
+  }
+}
+
+setup();
+requestAnimationFrame(tick);
+window.addEventListener('resize', function(){ if(!sOn) setup(); });
+
+/* background click blast */
+window.addEventListener('click', function(e){
+  if(sOn) return;
+  if(e.target.closest && (e.target.closest('.nav-btn')||e.target.closest('.back-btn')||e.target.closest('.sec-page'))) return;
+  var now=performance.now();
+  if(now-lastClick<200) return;
+  lastClick=now;
+  var c=blast(e.clientX,e.clientY,BRAD,BF);
+  if(!c) return;
+  var nf=BF*CDEC;
+  if(nf>=CMIN) CQ.push({x:c.x,y:c.y,f:nf,at:now+CMS,hop:1});
+});
+
+/* ══ PAGE NAV ══ */
+var pages = {
+  home:    document.getElementById('pg-home'),
+  work:    document.getElementById('pg-work'),
+  edu:     document.getElementById('pg-edu'),
+  contact: document.getElementById('pg-contact')
+};
+var hint = document.getElementById('hint');
+var busy = false;
+
+function showPage(id){
+  for(var k in pages) pages[k].classList.remove('active');
+  var pg=pages[id]; if(pg) pg.classList.add('active');
+  hint.style.opacity = (id==='home') ? '1' : '0';
+}
+
+function goTo(id){
+  if(busy || sOn) return;
+  busy = true;
+  /* hide all pages so swirl plays unobstructed */
+  for(var k in pages) pages[k].classList.remove('active');
+  hint.style.opacity = '0';
+  swirlBegin(function(){
+    showPage(id);
+    busy = false;
+  });
+}
+
+document.querySelectorAll('.nav-btn').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    goTo(btn.dataset.target);
+  });
+});
+document.querySelectorAll('.js-back').forEach(function(btn){
+  btn.addEventListener('click', function(e){
+    e.stopPropagation();
+    goTo('home');
+  });
+});
+
+})();
+</script>
+</body>
+</html>
